@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: nginx
+    image: nginx
+    ports:
+      - "80"
+
+  haproxy:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-proxy
+    container_name: haproxy
+    depends_on:
+      consul:
+        condition: service_healthy
+    image: haproxy
+    ports:
+      - "80:80"
+      - "1936:1936"
+
+  consul:
+    image: consul:latest
+    command: "agent -server -bootstrap -client 0.0.0.0 -ui"
+    container_name: consul
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    ports:
+      - "8500:8500"
+      - "8600:8600"
+
+  registrator:
+    image: gliderlabs/registrator:latest
+    command: "consul://consul:8500"
+    container_name: registrator
+    restart: on-failure
+    depends_on:
+      consul:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+

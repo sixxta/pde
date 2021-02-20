@@ -1,0 +1,8 @@
+FROM alpine:3.10
+
+RUN apk update && \
+    apk add haproxy
+
+COPY haproxy.conf /usr/local/etc/haproxy/haproxy.cfg
+
+CMD ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
