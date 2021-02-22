@@ -1,8 +1,16 @@
 FROM alpine:3.10
 
 RUN apk update && \
-    apk add haproxy
+    apk add haproxy bind-tools curl rsyslog && \
+    touch /var/log/haproxy.log && \
+    ln -sf /dev/stdout /var/log/harpoxy.log
 
-COPY haproxy.conf /usr/local/etc/haproxy/haproxy.cfg
+COPY docker-entrypoint.sh /etc/
+COPY rsyslog.conf /etc/rsyslog.d/
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 
-CMD ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+RUN chmod 700 /etc/docker-entrypoint.sh
+
+ENTRYPOINT ["/etc/docker-entrypoint.sh"]
+
+CMD ["-f", "/usr/local/etc/haproxy/haproxy.cfg"]

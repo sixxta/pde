@@ -1,27 +1,24 @@
 version: "3"
 
 services:
-  nginx:
+  nginx-web:
     build:
       context: .
       dockerfile: ./Dockerfile
-    container_name: nginx
-    image: nginx
+    image: nginx-web
     ports:
       - "80"
 
-  haproxy:
+  nginx-lb:
     build:
       context: .
-      dockerfile: ./Dockerfile-proxy
-    container_name: haproxy
+      dockerfile: ./Dockerfile-nginx-lb
     depends_on:
       consul:
         condition: service_healthy
-    image: haproxy
+    image: nginx-lb
     ports:
       - "80:80"
-      - "1936:1936"
 
   consul:
     image: consul:latest
@@ -38,7 +35,7 @@ services:
 
   registrator:
     image: gliderlabs/registrator:latest
-    command: "consul://consul:8500"
+    command: "-resync=5 -cleanup consul://consul:8500"
     container_name: registrator
     restart: on-failure
     depends_on:
@@ -46,4 +43,3 @@ services:
         condition: service_healthy
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
-

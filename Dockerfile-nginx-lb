@@ -7,21 +7,19 @@ RUN apk update && \
     apk add curl && \
     mkdir -p /run/nginx && \
     cd /etc/nginx/conf.d && \
-    mv default.conf default.conf.bak
+    mv default.conf default.conf.bak 
 
 ADD https://releases.hashicorp.com/consul-template/${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip /usr/bin/
 RUN unzip /usr/bin/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip && \
-    mv consul-template /usr/local/bin/consul-template && \
-    rm -rf /usr/bin/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip
+        mv consul-template /usr/local/bin/consul-template && \
+    	rm -rf /usr/bin/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip
 
-COPY app.conf /etc/nginx/conf.d/app.conf
+RUN rm -rf /etc/nginx/sites-enabled/default
 
-COPY index.html /var/www/index.html
+COPY load-balancer.conf.ctmpl /etc/nginx/conf.d/
 
-COPY targets.ctmpl /etc/targets.ctmpl
+COPY consul-template-config.hcl /etc/
 
-COPY consul-template-config-ro.hcl /etc/consul-template-config.hcl
-
-COPY docker-entrypoint.sh /etc/docker-entrypoint.sh
+COPY docker-entrypoint.sh /etc/
 
 CMD ["/bin/sh", "/etc/docker-entrypoint.sh"]

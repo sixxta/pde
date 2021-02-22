@@ -1,0 +1,13 @@
+upstream backend {
+{{ range service "nginx-web" }}
+  server {{ .Address }}:80;
+{{ end }}
+}
+
+server {
+   listen 80;
+
+   location / {
+      proxy_pass http://backend;
+   }
+}
