@@ -35,7 +35,7 @@ services:
 
   registrator:
     image: gliderlabs/registrator:latest
-    command: "-resync=5 -cleanup consul://consul:8500"
+    command: "-retry-attempts=-1 -resync=5 -ttl=300 -ttl-refresh=150 -cleanup  consul://consul:8500"
     container_name: registrator
     restart: on-failure
     depends_on:
